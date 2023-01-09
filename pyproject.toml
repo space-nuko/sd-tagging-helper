@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "sd-tagging-helper"
+version = "0.1.0"
+description = ""
+authors = ["Ruin0x11 <ipickering2@gmail.com>"]
+readme = "README.md"
+packages = [{include = "sd_tagging_helper"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyqt5 = "5.15.7"
+pillow = "^9.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
