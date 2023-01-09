@@ -986,7 +986,7 @@ class Backend(QObject):
     def title(self):
         if self.isShowingGlobal:
             return "Tagging Global"
-        return f"Tagging {self.imgIndex+1} of {len(self.images)}"
+        return f"Tagging {self.imgIndex+1} of {len(self.images)} [{self.current.source}]"
     
     @pyqtProperty(list, notify=favUpdated)
     def favourites(self):
@@ -1331,6 +1331,15 @@ class Backend(QObject):
     @pyqtSlot(bool)
     def ddbSetAdding(self, adding):
         self.ddbAdd = adding
+        self.updated.emit()
+
+    @pyqtSlot()
+    def reloadTagsFromFile(self):
+        tags = get_metadata(self.current.source)
+        self.current.setTags(tags)
+
+        self.tagsUpdated.emit()
+        self.changedUpdated.emit()
         self.updated.emit()
 
     @pyqtSlot()

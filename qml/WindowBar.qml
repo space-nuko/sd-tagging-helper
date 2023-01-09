@@ -180,6 +180,12 @@ TopMenuBar {
                     backend.cleanTags()
                 }
             }
+            Action {
+                text: "Reload tags from file"
+                onTriggered: {
+                    backend.reloadTagsFromFile()
+                }
+            }
         }
         TopMenu {
             id: intMenu
