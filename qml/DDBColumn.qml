@@ -62,13 +62,7 @@ Item {
             } 
 
             onDoublePressed: {
-                if(!backend.tags.includes(tag)) {
-                    backend.addTag(tag)
-                    root.tagAdded()
-                } else {
-                    backend.deleteTagByName(tag)
-                    root.tagDeleted()
-                }
+
             }
 
             onMoved: {
