@@ -389,6 +389,9 @@ ApplicationWindow {
                 case Qt.Key_P:
                     packageWindow.open()
                     break;
+                case Qt.Key_M:
+                    changeMode()
+                    break;
                 default:
                     event.accepted = false
                     break;
@@ -431,9 +434,6 @@ ApplicationWindow {
                     break;
                 case Qt.Key_D:
                     view.media.right()
-                    break;
-                case Qt.Key_M:
-                    changeMode()
                     break;
                 case Qt.Key_1:
                     bar.currentIndex = 0

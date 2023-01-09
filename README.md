@@ -40,7 +40,7 @@ The minimal usage is to run `helper.py` or `start.bat`. The program will ask you
 
 ### Hotkeys
 ```
-Alt      - Switch croping mode
+Ctrl + M - Switch croping mode
 Ctrl + S - Save changes
 Ctrl + Z - Reset to last saved state
 Ctrl + A - Auto position image. contain all mode
