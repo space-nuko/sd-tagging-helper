@@ -755,8 +755,6 @@ class Backend(QObject):
         self.cropThread = QThread(self)
         self.cropWorker = None
 
-        self.setInputFolder(in_folder, True)
-
         self.webui_folder = webui_folder
         
         # general state
@@ -787,7 +785,8 @@ class Backend(QObject):
         self.previewPrompt = ""
         self.previewVisible = False
         self.cycleDelta = None
-        self.setActive(0)
+
+        self.setInputFolder(in_folder, True)
 
         # GUI init
         self.search("")        
@@ -822,7 +821,7 @@ class Backend(QObject):
             self.staging_folder = in_cfg["staging"]
         if "dimension" in in_cfg:
             self.dim = in_cfg["dimension"]
-        
+
         if not self.out_folder:
             self.out_folder = os.path.join(self.in_folder, "output")
         if not self.staging_folder:
@@ -845,6 +844,11 @@ class Backend(QObject):
         for i in self.images:
             i.cache = self.cache
             i.globals = self.globals
+
+        if "img_index" in in_cfg:
+            self.setActive(max(0, min(len(self.images) - 1, in_cfg["img_index"])))
+        else:
+            self.setActive(0)
 
         self.buildCropWorker()
 
@@ -911,6 +915,7 @@ class Backend(QObject):
             self.isShowingFrequent = True
 
         self.doUpdate()
+        self.saveConfig() # to save img_index
         
     def doUpdate(self):
         self.changedUpdated.emit()
@@ -1588,7 +1593,7 @@ class Backend(QObject):
     def saveConfig(self):
         put_json({"fav": self.fav, "freq": self.freq, "webui": self.webui_folder,
                   "colors": self.isShowingTagColors, "prefixing": self.isPrefixingTags, "input": self.in_folder}, CONFIG)
-        put_json({"output": self.out_folder, "staging": self.staging_folder, "dimension": self.dim}, self.in_config)
+        put_json({"output": self.out_folder, "staging": self.staging_folder, "dimension": self.dim, "img_index": self.imgIndex}, self.in_config)
 
 def start():
     parser = argparse.ArgumentParser(description='manual image tag/cropping helper GUI')
@@ -1650,4 +1655,3 @@ def excepthook(exc_type, exc_value, exc_tb):
 if __name__ == "__main__":
     sys.excepthook = excepthook
     start()
-    
