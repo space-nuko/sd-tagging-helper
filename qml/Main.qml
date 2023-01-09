@@ -432,7 +432,7 @@ ApplicationWindow {
                 case Qt.Key_D:
                     view.media.right()
                     break;
-                case Qt.Key_Alt:
+                case Qt.Key_M:
                     changeMode()
                     break;
                 case Qt.Key_1:
