@@ -225,7 +225,7 @@ class DDBWorker(QObject):
         outputs.sort(key=lambda a: a[1], reverse=True)        
         if len(outputs) > 100:
             outputs = outputs[:100]
-        outputs = [t[0] for t in outputs]
+        outputs = [t[0] for t in outputs if t[1] > 0.5]
 
         self.resultCallback.emit(outputs)
 
@@ -265,9 +265,9 @@ class CropRunnable(QRunnable):
         if self.img_mode != 3:
             img_ext = ""
             if self.ext_mode == 0:
-                img_ext = ".jpg"
-            elif self.ext_mode == 1:
                 img_ext = ".png"
+            elif self.ext_mode == 1:
+                img_ext = ".jpg"
             elif self.ext_mode == 2:
                 img_ext = os.path.splitext(self.img.source)[1]
 
@@ -749,6 +749,7 @@ class Backend(QObject):
 
     def __init__(self, in_folder, tags_file, webui_folder, parent=None):
         super().__init__(parent)
+        self.initialized = False
         self.cache = Cache(8)
 
         # crop worker & state
@@ -806,6 +807,8 @@ class Backend(QObject):
 
         # clean up ddb thread
         parent.aboutToQuit.connect(self.closing)
+
+        self.initialized = True
 
     def load(self):
         self.in_config = os.path.join(self.in_folder, CONFIG)
@@ -915,7 +918,8 @@ class Backend(QObject):
             self.isShowingFrequent = True
 
         self.doUpdate()
-        self.saveConfig() # to save img_index
+        if self.initialized:
+            self.saveConfig() # to save img_index
         
     def doUpdate(self):
         self.changedUpdated.emit()
@@ -1084,6 +1088,24 @@ class Backend(QObject):
         if not tag in self.freq:
             self.freq[tag] = 0
         self.freq[tag] += 1
+        self.saveConfig()
+
+        self.suggestionsUpdated.emit()
+
+    @pyqtSlot(list)
+    def addTags(self, tags):
+        import pprint; pprint.pp(tags)
+        for tag in tags:
+            if tag in self.current.tags:
+                continue
+            self.current.addTag(tag, self.isPrefixingTags)
+            if not tag in self.freq:
+                self.freq[tag] = 0
+            self.freq[tag] += 1
+
+        self.tagsUpdated.emit()
+        self.changedUpdated.emit()
+
         self.saveConfig()
 
         self.suggestionsUpdated.emit()

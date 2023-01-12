@@ -24,7 +24,6 @@ Item {
     }
 
     function tagDeleted() {
-
     }
 
     ListModel {

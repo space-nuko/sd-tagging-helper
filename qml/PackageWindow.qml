@@ -58,7 +58,7 @@ PopupWindow {
         currentIndex: 0
         width: 100
         height: 30
-        model: ["jpg", "png", "original"]
+        model: ["png", "jpg", "original"]
     }
 
     UniformText {
@@ -121,7 +121,7 @@ PopupWindow {
         anchors.right: extMode.right
         height: 30
         from: 1
-        value: 2
+        value: 4
         to: backend.maxThreads
         snapMode: Slider.SnapAlways
         stepSize: 1.0

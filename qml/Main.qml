@@ -374,6 +374,9 @@ ApplicationWindow {
                 case Qt.Key_1:
                     tags.addFavourites()
                     break;
+                case Qt.Key_2:
+                    tags.addDdb()
+                    break;
                 case Qt.Key_R:
                     backend.cleanTags()
                     break

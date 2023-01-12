@@ -23,6 +23,10 @@ Item {
         }
     }
 
+    function addDdb() {
+        backend.addTags(backend.ddb)
+    }
+
     Search {
         id: searchBox
         anchors.top: parent.top
