@@ -250,6 +250,8 @@ class CropRunnable(QRunnable):
 
         img_path = os.path.join(self.out_folder, os.path.splitext(source_name)[0])
 
+        os.makedirs(self.out_folder, exist_ok=True)
+
         if self.prompt_mode == 0:
             self.img.writePrompt(img_path+".txt")
         elif self.prompt_mode == 1:
@@ -293,28 +295,41 @@ class CropWorker(QObject):
         self.image_mode = 0
         self.ext_mode = 0
         self.prompt_mode = 0
+        self.filter_mode = 0
         self.thread_count = 0
         self.pool = QThreadPool()
 
-    @pyqtSlot(int, int, int, int)
-    def setup(self, img_mode, ext_mode, prompt_mode, thread_count):
+    @pyqtSlot(int, int, int, int, int)
+    def setup(self, img_mode, ext_mode, prompt_mode, thread_count, filter_mode):
         self.img_mode = img_mode
         self.ext_mode = ext_mode
         self.prompt_mode = prompt_mode
         self.thread_count = thread_count
+        self.filter_mode = filter_mode
 
     @pyqtSlot()
     def start(self):
         self.progress = 0
-        self.total = len(self.images)
-        self.finishTotal = self.total
+
+        def shouldCrop(img):
+            if self.filter_mode == 1:
+                return img.tags
+            if img.ignored:
+                return False
+            return True
         
+        args = (self.dim, self.out_folder, self.img_mode, self.prompt_mode, self.ext_mode)
+        runnables = [CropRunnable(i, self.images[i], *args) for i in range(len(self.images)) if shouldCrop(self.images[i])]
+
+        if not runnables:
+            self.progressCallback.emit(-1.0, "No images to process.")
+            return
+
         self.progressCallback.emit(0.0, "Starting...")
 
         self.pool.setMaxThreadCount(self.thread_count)
-        
-        args = (self.dim, self.out_folder, self.img_mode, self.prompt_mode, self.ext_mode)
-        runnables = [CropRunnable(i, self.images[i], *args) for i in range(len(self.images))]
+        self.total = len(runnables)
+        self.finishTotal = self.total
 
         for r in runnables:
             r.signals.completed.connect(self.runnableCompleted)
@@ -357,6 +372,7 @@ class Img:
         self.staging_path = staging_path
         self.ready = False # ready to be displayed (needs crop offsets/scale)
         self.changed = False
+        self.ignored = False
         self.ddb = []
         self.w, self.h = None, None
         self.offset_x, self.offset_y, self.scale = None, None, None
@@ -389,13 +405,15 @@ class Img:
         x,y,s = data["offset_x"], data["offset_y"], data["scale"]
         self.setCrop(x,y,s)
         self.tags = data["tags"]
+        self.ignored = data["ignored"]
         return True
     
     def writeStagingData(self):
         data = {"offset_x": self.offset_x,
                 "offset_y": self.offset_y,
                 "scale": self.scale,
-                "tags": self.tags}
+                "tags": self.tags,
+                "ignored": self.ignored}
         with open(self.staging_path, 'w', encoding="utf-8") as f:
             json.dump(data, f)
         self.changed = False
@@ -739,7 +757,7 @@ class Backend(QObject):
     listEvent = pyqtSignal(int)
 
     cropWorkerUpdated = pyqtSignal()
-    cropWorkerSetup = pyqtSignal(int,int,int,int)
+    cropWorkerSetup = pyqtSignal(int,int,int,int,int)
     cropWorkerStart = pyqtSignal()
     cropWorkerStop = pyqtSignal()
 
@@ -1068,6 +1086,10 @@ class Backend(QObject):
         return self.isShowingGlobal
 
     @pyqtProperty(bool, notify=updated)
+    def ignoring(self):
+        return self.current.ignored
+
+    @pyqtProperty(bool, notify=updated)
     def ddbIsAdding(self):
         return self.ddbAdd
 
@@ -1200,6 +1222,9 @@ class Backend(QObject):
                 if len(results) > MX_TAGS:
                     break
 
+            if s.lower() in results:
+                results.insert(0, results.pop(results.index(s.lower())))
+
             self.searchResults = results
         self.searchUpdated.emit()
 
@@ -1219,11 +1244,19 @@ class Backend(QObject):
         self.updated.emit()
         self.saveConfig()
 
-    @pyqtSlot(int, int, int, int)
-    def package(self, img_mode, ext_mode, prompt_mode, thread_count):
+    @pyqtSlot()
+    def toggleIgnore(self):
+        self.current.ignored = not self.current.ignored
+        self.current.changed = True
+        self.changedUpdated.emit()
+        self.updated.emit()
+        self.saveConfig()
+
+    @pyqtSlot(int, int, int, int, int)
+    def package(self, img_mode, ext_mode, prompt_mode, thread_count, filter_mode):
         self.cropWorkerActive = True
         self.cropThread.start()
-        self.cropWorkerSetup.emit(img_mode, ext_mode, prompt_mode, thread_count)
+        self.cropWorkerSetup.emit(img_mode, ext_mode, prompt_mode, thread_count, filter_mode)
         self.cropWorkerStart.emit()
         self.cropWorkerUpdated.emit()
     

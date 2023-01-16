@@ -62,10 +62,34 @@ PopupWindow {
     }
 
     UniformText {
+        id: filterLabel
+        text: "Filter"
+        y: imageLabel.y + 40
+        anchors.left: imageLabel.left
+        height: 30
+        leftPadding: 4
+        rightPadding: 16
+        font.bold: true
+        color: "white"
+        verticalAlignment: Text.AlignVCenter
+    }
+
+    Combo {
+        id: filterMode
+        font.pointSize: 10
+        anchors.top: filterLabel.top
+        anchors.left: imageLabel.right
+        currentIndex: 0
+        width: 180
+        height: 30
+        model: ["none", "ignore tagless"]
+    }
+
+    UniformText {
         id: promptLabel
         text: "Prompt"
         anchors.left: imageLabel.left
-        y: imageLabel.y + 40
+        y: imageLabel.y + 80
         height: 30
         leftPadding: 4
         rightPadding: 16
@@ -88,8 +112,8 @@ PopupWindow {
     UniformText {
         id: threadLabel
         text: "Threads"
-        anchors.left: imageLabel.left
-        y: imageLabel.y + 80
+        anchors.left: filterLabel.left
+        y: filterLabel.y + 120
         height: 30
         leftPadding: 4
         rightPadding: 16
@@ -143,7 +167,7 @@ PopupWindow {
             if(backend.cropActive) {
                 backend.stopPackage()
             } else {
-                backend.package(imageMode.currentIndex, extMode.currentIndex, promptMode.currentIndex, threadCount.value)
+                backend.package(imageMode.currentIndex, extMode.currentIndex, promptMode.currentIndex, threadCount.value, filterMode.currentIndex)
             }
         }
     }

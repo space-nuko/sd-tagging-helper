@@ -51,6 +51,12 @@ Rectangle {
             }
         }
 
+        ColorOverlay {
+            anchors.fill: media
+            source: media
+            color: backend.ignoring ? "#aaaa0000" : "#00000000"
+        }
+
         Rectangle {
             id: cropOutline
             visible: crop.visible
@@ -411,7 +417,7 @@ Rectangle {
             anchors.top: parent.top
             width: height
             icon: "qrc:/icons/crop.svg"
-            tooltip: "Switch mode (Alt)"
+            tooltip: "Switch mode (Ctrl-M)"
             color: "#303030"
             iconColor: !altCropMode ? "#aaa" : "#606060"
             onPressed: {

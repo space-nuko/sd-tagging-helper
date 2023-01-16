@@ -444,6 +444,9 @@ ApplicationWindow {
                 case Qt.Key_2:
                     bar.currentIndex = 1
                     break;
+                case Qt.Key_X:
+                    backend.toggleIgnore()
+                    break;
                 default:
                     event.accepted = false
                     break;

@@ -160,24 +160,24 @@ Item {
         clip: true
 
         IconButton {
-            id: packageButton
+            id: ignoreButton
             height: controls.height
             anchors.left: controls.left
             anchors.top: controls.top
             width: height
             icon: "qrc:/icons/package.svg"
-            tooltip: "Package outputs"
+            tooltip: "Ignore (X)"
             color: "#303030"
-            working: packageWindow.visible
+            iconColor: backend.ignoring ? "#ba0000" : "#aaa"
             onPressed: {
-                root.packageWindowOpen()
+                backend.toggleIgnore()
             }
         }
 
         IconButton {
             id: globeButton
             height: controls.height
-            anchors.left: packageButton.right
+            anchors.left: ignoreButton.right
             anchors.top: controls.top
             width: height
             icon: "qrc:/icons/globe-frame.svg"
