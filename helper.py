@@ -218,16 +218,60 @@ class DDBWorker(QObject):
         with torch.no_grad():
             x = torch.from_numpy(a).to("cpu")
             y = self.model(x)[0].detach().cpu().numpy()
-        
+
         outputs = []
         for tag, probability in zip(self.model.tags, y):
             outputs += [(tag, probability)]
-        outputs.sort(key=lambda a: a[1], reverse=True)        
+        outputs.sort(key=lambda a: a[1], reverse=True)
         if len(outputs) > 100:
             outputs = outputs[:100]
         outputs = [t[0] for t in outputs if t[1] > 0.5]
 
         self.resultCallback.emit(outputs)
+
+class WD14Worker(QObject):
+    resultCallback = pyqtSignal(list)
+    loadedCallback = pyqtSignal()
+
+    def __init__(self,  parent=None):
+        super().__init__(parent)
+
+    def add_import_paths(self, webui_folder):
+        # torch will segfault if we dont import it on the main thread first
+        import torch
+
+    @pyqtSlot()
+    def load(self):
+        print("STATUS: loading waifu diffusion model...")
+
+        import torch
+        import tagger.utils
+        tagger.utils.refresh_interrogators()
+        self.model = tagger.utils.interrogators["wd14-swinv2-v2-git"]
+
+        self.loadedCallback.emit()
+
+    @pyqtSlot('QString', bool, float, float, float)
+    def interrogate(self, file, ready, x, y, s):
+        img = Img(file, "")
+        if ready:
+            img.setCrop(x,y,s)
+        else:
+            img.prepare()
+
+        from tagger.interrogator import Interrogator
+
+        ratings, tags = self.model.interrogate(img.get())
+        processed_tags = Interrogator.postprocess_tags(
+            tags,
+            threshold=0.35,
+            replace_underscore=False,
+            escape_tag=True
+        )
+
+        sorted_tags = [k for k, v in sorted(processed_tags.items(), key=lambda item: item[1])]
+
+        self.resultCallback.emit(sorted_tags)
 
 class CropRunnableSignals(QObject):
     completed = pyqtSignal(int, 'QString')
@@ -608,6 +652,12 @@ class Img:
             img.save(out_file, quality=95)
         else:
             img.save(out_file)
+
+    def get(self):
+        if self.cache:
+            return self.cache.fetch(self.source)
+        else:
+            return Image.open(self.source).convert('RGB')
     
     def writePrompt(self, prompt_file):
         with open(prompt_file, "w", encoding="utf-8") as f:
@@ -814,7 +864,7 @@ class Backend(QObject):
         self.saveConfig()
 
         # ddb worker & state
-        self.ddbWorker = DDBWorker()
+        self.ddbWorker = WD14Worker()
         self.ddbCurrent = -1
         self.ddbLoading = True
         self.ddbAll = False

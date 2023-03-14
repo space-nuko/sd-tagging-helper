@@ -10,6 +10,8 @@ packages = [{include = "sd_tagging_helper"}]
 python = "^3.10"
 pyqt5 = "5.15.7"
 pillow = "^9.3.0"
+onnxruntime-gpu = "^1.14.1"
+opencv-python = "^4.7.0.72"
 
 
 [build-system]

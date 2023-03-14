@@ -12,7 +12,7 @@ IconButton {
         if(s == -1)
             return "Loading..."
         if(s == 0)
-            return "Interrogate via DeepDanbooru"
+            return "Interrogate via Waifu Diffusion 1.4 Tagger"
         if(s == 1)
             return "Interrogating..."
         return "Interrogating " + String(s-1) + " of " + String(backend.total)

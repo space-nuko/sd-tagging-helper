@@ -27,7 +27,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         UniformText {
-            text: "DeepDanbooru"
+            text: "Waifu Diffusion"
             font.pointSize: 11
             leftPadding: 8
             rightPadding: 16
