@@ -701,6 +701,7 @@ class Globals():
         self.config_path = config
         self.tags = [ELLIPSIS]
         self.changed = False
+        self.ignored = False
 
         self.readStagingData()
 

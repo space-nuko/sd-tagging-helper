@@ -12,14 +12,18 @@ Item {
     
     function addFavourites() {
         for(var i = 0; i < backend.favourites.length; i++) {
-            var tag = backend.favourites[i]
-            if(!backend.tags.includes(tag)) {
-                backend.addTag(tag)
-                root.tagAdded()
-            } else {
-                backend.deleteTagByName(tag)
-                root.tagDeleted()
-            }
+            addFavourite(i)
+        }
+    }
+
+    function addFavourite(i) {
+        var tag = backend.favourites[i]
+        if(!backend.tags.includes(tag)) {
+            backend.addTag(tag)
+            root.tagAdded()
+        } else {
+            backend.deleteTagByName(tag)
+            root.tagDeleted()
         }
     }
 
